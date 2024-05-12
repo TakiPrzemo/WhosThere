@@ -16,6 +16,35 @@ if __name__ == '__main__':
 
 # See PyCharm help at https://www.jetbrains.com/help/pycharm/
 
+import face_recognition
+import cv2 as cv
+import numpy as np
+import yaml
+
+
+def face_confidence(face_distance, face_match_threshold):
+    range = 1.0 - face_match_threshold
+    linear_val = (1.8 * face_distance) / (range * 2.0)
+    if face_distance > face_match_threshold:
+        return str(round(linear_val * 100, 2)) + "%"
+    else:
+        value = (linear_val + ((1.0 - linear_val) * pow((linear_val - 0.5) * 2, 0.2))) * 100
+        return str(round(value, 2)) + "%"
+        
+        
+with open('known_faces.yml', 'r') as f:
+    data = yaml.load(f, Loader=yaml.FullLoader)
+    known_face_names = data['names']
+    known_face_encodings = np.array(data['encodings'])
+
+face_loc = []
+face_encodings = []
+face_names = []
+process_this_frame = True
+
+video_capture = cv.VideoCapture(0)
+
+
 while True:
     ret, frame = video_capture.read()
 
