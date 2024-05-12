@@ -21,7 +21,6 @@ import cv2 as cv
 import numpy as np
 import yaml
 
-
 def face_confidence(face_distance, face_match_threshold):
     range = 1.0 - face_match_threshold
     linear_val = (1.8 * face_distance) / (range * 2.0)
