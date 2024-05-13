@@ -1,21 +1,3 @@
-# This is a sample Python script.
-
-# Press Shift+F10 to execute it or replace it with your code.
-# Press Double Shift to search everywhere for classes, files, tool windows, actions, and settings.
-
-
-def print_hi(name):
-    # Use a breakpoint in the code line below to debug your script.
-    print(f'Hi, {name}')  # Press Ctrl+F8 to toggle the breakpoint.
-
-
-# Press the green button in the gutter to run the script.
-if __name__ == '__main__':
-    print_hi('PyCharm')
-    print("Change pushed via Pycharm to git");
-
-# See PyCharm help at https://www.jetbrains.com/help/pycharm/
-
 import face_recognition
 import cv2 as cv
 import numpy as np
@@ -41,8 +23,8 @@ face_encodings = []
 face_names = []
 process_this_frame = True
 
-video_capture = cv.VideoCapture(0)
 
+video_capture = cv.VideoCapture(0)
 
 while True:
     ret, frame = video_capture.read()
@@ -69,3 +51,27 @@ while True:
                 face_names.append(name)
 
     process_this_frame = not process_this_frame
+
+    for (top, right, bottom, left), text in zip(face_loc, face_names):
+        top *= 4
+        right *= 4
+        bottom *= 4
+        left *= 4
+        
+        if text.startswith("?????"):
+            color = (0, 0, 255)
+        else:
+            color = (0, 255, 0)
+            
+        cv.rectangle(frame, (left, top), (right, bottom), color, 2)
+        cv.rectangle(frame, (left, bottom - 35), (right, bottom), color, cv.FILLED)
+        cv.putText(frame, text, (left + 6, bottom - 6), cv.FONT_HERSHEY_DUPLEX, 1, (255, 255, 255), 1)
+    
+    cv.namedWindow('Video', cv.WINDOW_GUI_NORMAL)
+    cv.imshow('Video', frame)
+
+    if cv.waitKey(1) & 0xFF == ord('q'):
+        break
+
+video_capture.release()
+cv.destroyAllWindows()
