@@ -63,7 +63,7 @@ if __name__ == '__main__':
                 print(f"Photo saved ({max_index + 1}/{MAX_INDEX + 1}): {file_name}")
                 picture_index += 1
 
-                if(max_index < MAX_INDEX):
+                if max_index < MAX_INDEX:
                     max_index += 1
 
                 if picture_index > MAX_INDEX:
