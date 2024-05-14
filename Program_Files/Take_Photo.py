@@ -1,8 +1,18 @@
 import cv2 as cv
 import os
 import re
+import tkinter as tk
+from PIL import Image
+from PIL import ImageTk
+import os
 
 if __name__ == '__main__':
+    root = tk.Tk()
+    root.title("Manage users")
+
+    label = tk.Label(root)
+    label.pack()
+
     DIR = "Photos"
     FIRST_INDEX = 0
     MAX_INDEX = 9
@@ -45,9 +55,17 @@ if __name__ == '__main__':
         print("ERR: camera not connected")
     else:
         while True:
-            ret, video = camera.read()
-            cv.namedWindow("Who's there", cv.WINDOW_GUI_NORMAL)
-            cv.imshow("Adding new user", video)
+            ret, frame = camera.read()
+
+            if not ret:
+                break
+
+            frame_arr = cv.cvtColor(frame, cv.COLOR_BGR2RGB)
+            frame = Image.fromarray(frame_arr)
+            image = ImageTk.PhotoImage(frame)
+            label.configure(image=image)
+
+            root.update()
 
             # wychodzenie z aplikacji
             if cv.waitKey(1) == ord('q'):
@@ -59,7 +77,7 @@ if __name__ == '__main__':
 
                 save_path = os.path.join(DIR, file_name)
 
-                cv.imwrite(save_path, video)
+                cv.imwrite(save_path, frame)
                 print(f"Photo saved ({max_index + 1}/{MAX_INDEX + 1}): {file_name}")
                 picture_index += 1
 
@@ -72,4 +90,4 @@ if __name__ == '__main__':
                     picture_index += FIRST_INDEX
 
     camera.release()
-    cv.destroyAllWindows()
+    root.mainloop()
