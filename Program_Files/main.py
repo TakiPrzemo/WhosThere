@@ -2,6 +2,10 @@ import face_recognition
 import cv2 as cv
 import numpy as np
 import yaml
+import tkinter as tk
+from PIL import Image
+from PIL import ImageTk
+import os
 
 def face_confidence(face_distance, face_match_threshold):
     range = 1.0 - face_match_threshold
@@ -23,11 +27,21 @@ face_encodings = []
 face_names = []
 process_this_frame = True
 
+root = tk.Tk()
+root.title("Who's there")
 
 video_capture = cv.VideoCapture(0)
 
+label = tk.Label(root)
+label.pack()
+
+
 while True:
+
     ret, frame = video_capture.read()
+
+    if not ret:
+        break
 
     if process_this_frame:
         small_frame = cv.resize(frame, (0, 0), fx=0.25, fy=0.25)
@@ -66,12 +80,17 @@ while True:
         cv.rectangle(frame, (left, top), (right, bottom), color, 2)
         cv.rectangle(frame, (left, bottom - 35), (right, bottom), color, cv.FILLED)
         cv.putText(frame, text, (left + 6, bottom - 6), cv.FONT_HERSHEY_DUPLEX, 1, (255, 255, 255), 1)
-    
-    cv.namedWindow('Video', cv.WINDOW_GUI_NORMAL)
-    cv.imshow('Video', frame)
+
+    frame_arr = cv.cvtColor(frame, cv.COLOR_BGR2RGB)
+    frame = Image.fromarray(frame_arr)
+    image = ImageTk.PhotoImage(frame)
+    label.configure(image=image)
+
+    root.update()
 
     if cv.waitKey(1) & 0xFF == ord('q'):
         break
 
 video_capture.release()
 cv.destroyAllWindows()
+root.mainloop()
