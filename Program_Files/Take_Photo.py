@@ -2,16 +2,39 @@ import cv2 as cv
 import os
 import re
 import tkinter as tk
+from tkinter import *
 from PIL import Image
 from PIL import ImageTk
 import os
 
+
+def callback() -> None:
+    camera.release()
+    root.destroy()
+
+
 if __name__ == '__main__':
     root = tk.Tk()
     root.title("Manage users")
+    root.protocol("WM_DELETE_WINDOW", callback)
 
-    label = tk.Label(root)
-    label.pack()
+    left_frame = LabelFrame(root, width=200)
+    left_frame.pack(side=LEFT, fill=Y)
+    left_frame.pack_propagate(False)
+    # do left_frame dodajemy przyciski i inne elementy interfejsu
+
+    # przyciski jako testowe elementy (do usunięcia)
+    button_1 = tk.Button(left_frame, text="Przycisk 1")
+    button_1.pack()
+
+    button_2 = tk.Button(left_frame, text="Przycisk 2")
+    button_2.pack()
+
+    right_frame = Frame(root)
+    right_frame.pack(side=RIGHT, expand=TRUE, fill=BOTH)
+
+    camera_preview = tk.Label(right_frame)
+    camera_preview.pack()
 
     DIR = "Photos"
     FIRST_INDEX = 0
@@ -63,7 +86,7 @@ if __name__ == '__main__':
             frame_arr = cv.cvtColor(frame, cv.COLOR_BGR2RGB)
             frame = Image.fromarray(frame_arr)
             image = ImageTk.PhotoImage(frame)
-            label.configure(image=image)
+            camera_preview.configure(image=image)
 
             root.update()
 
