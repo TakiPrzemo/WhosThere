@@ -1,5 +1,4 @@
 import cv2 as cv
-import os
 import re
 import tkinter as tk
 from tkinter import *
@@ -13,7 +12,34 @@ def callback() -> None:
     root.destroy()
 
 
+def save_photo(name: str, photo_counting: [int, int], max_index: int, first_index: int, dir_save: str,
+               frame_to_save) -> None:
+    file_name = f"{name.capitalize()}_{photo_counting[0]}.jpg"
+
+    save_path = os.path.join(dir_save, file_name)
+
+    cv.imwrite(save_path, frame_to_save)
+    print(f"Photo saved ({photo_counting[1] + 1}/{MAX_INDEX + 1}): {file_name}")
+    photo_counting[0] += 1
+
+    if photo_counting[1] < max_index:
+        photo_counting[1] += 1
+
+    if photo_counting[0] > max_index:
+        photo_counting[0] = first_index
+    else:
+        photo_counting[0] += first_index
+
+
 if __name__ == '__main__':
+
+    DIR = "Photos"
+    FIRST_INDEX = 0
+    MAX_INDEX = 9
+    user_photo_data = [FIRST_INDEX, FIRST_INDEX]
+    person_name = input("Submit user's name: ")
+    frame_raw = None
+
     root = tk.Tk()
     root.title("Manage users")
     root.protocol("WM_DELETE_WINDOW", callback)
@@ -24,11 +50,15 @@ if __name__ == '__main__':
     # do left_frame dodajemy przyciski i inne elementy interfejsu
 
     # przyciski jako testowe elementy (do usunięcia)
-    button_1 = tk.Button(left_frame, text="Przycisk 1")
+    button_1 = tk.Button(left_frame,
+                         text="Test zapisz",
+                         command=lambda: save_photo(person_name, user_photo_data, MAX_INDEX, FIRST_INDEX, DIR, frame_raw)
+                         )
     button_1.pack()
 
     button_2 = tk.Button(left_frame, text="Przycisk 2")
     button_2.pack()
+    # ==========
 
     right_frame = Frame(root)
     right_frame.pack(side=RIGHT, expand=TRUE, fill=BOTH)
@@ -36,14 +66,9 @@ if __name__ == '__main__':
     camera_preview = tk.Label(right_frame)
     camera_preview.pack()
 
-    DIR = "Photos"
-    FIRST_INDEX = 0
-    MAX_INDEX = 9
-
     # if do ustawiania indeksowania pliku
 
     # ======================================
-    person_name = input("Submit user's name: ")
 
     if any(file.startswith(person_name) for file in os.listdir(DIR)):
         existing_files = []
@@ -57,18 +82,18 @@ if __name__ == '__main__':
                 number_str = number.group()
                 index_list.append(int(number_str))
 
-        max_index = max(index_list) + 1
-        next_index = max_index
+        user_photo_data[1] = max(index_list) + 1
+        user_photo_data[0] = user_photo_data[1]
 
-        if next_index >= MAX_INDEX:
-            picture_index = FIRST_INDEX
-            max_index = MAX_INDEX
+        if user_photo_data[0] >= MAX_INDEX:
+            user_photo_data[0] = FIRST_INDEX
+            user_photo_data[1] = MAX_INDEX
         else:
-            picture_index = next_index + FIRST_INDEX
+            user_photo_data[0] = user_photo_data[0] + FIRST_INDEX
 
     else:
-        picture_index = FIRST_INDEX
-        max_index = FIRST_INDEX
+        user_photo_data[0] = FIRST_INDEX
+        user_photo_data[1] = FIRST_INDEX
 
     # ======================================
 
@@ -78,39 +103,17 @@ if __name__ == '__main__':
         print("ERR: camera not connected")
     else:
         while True:
-            ret, frame = camera.read()
+            ret, frame_raw = camera.read()
 
             if not ret:
                 break
 
-            frame_arr = cv.cvtColor(frame, cv.COLOR_BGR2RGB)
+            frame_arr = cv.cvtColor(frame_raw, cv.COLOR_BGR2RGB)
             frame = Image.fromarray(frame_arr)
             image = ImageTk.PhotoImage(frame)
             camera_preview.configure(image=image)
 
             root.update()
-
-            # wychodzenie z aplikacji
-            if cv.waitKey(1) == ord('q'):
-                break
-
-            # robienie zdjęć spacją
-            elif cv.waitKey(1) == ord(' '):
-                file_name = f"{person_name.capitalize()}_{picture_index}.jpg"
-
-                save_path = os.path.join(DIR, file_name)
-
-                cv.imwrite(save_path, frame)
-                print(f"Photo saved ({max_index + 1}/{MAX_INDEX + 1}): {file_name}")
-                picture_index += 1
-
-                if max_index < MAX_INDEX:
-                    max_index += 1
-
-                if picture_index > MAX_INDEX:
-                    picture_index = FIRST_INDEX
-                else:
-                    picture_index += FIRST_INDEX
 
     camera.release()
     root.mainloop()
