@@ -4,6 +4,8 @@ import os
 import tkinter as tk
 from tkinter import *
 from tkinter import messagebox
+
+import face_recognition
 from PIL import Image
 from PIL import ImageTk
 import os
@@ -18,19 +20,24 @@ def save_photo(name: str, photo_counting: [int, int], max_index: int, first_inde
                frame_to_save) -> None:
     file_name = f"{name.capitalize()}_{photo_counting[0]}.jpg"
 
-    save_path = os.path.join(photo_dir, file_name)
-
-    cv.imwrite(save_path, frame_to_save)
-    print(f"Photo saved ({photo_counting[1] + 1}/{MAX_INDEX + 1}): {file_name}")
-    photo_counting[0] += 1
-
-    if photo_counting[1] < max_index:
-        photo_counting[1] += 1
-
-    if photo_counting[0] > max_index:
-        photo_counting[0] = first_index
+    try:
+        face_recognition.face_encodings(frame_to_save)[0]
+    except IndexError:
+        print("Photo is too blurry, repeat the shot!")
     else:
-        photo_counting[0] += first_index
+        save_path = os.path.join(photo_dir, file_name)
+
+        cv.imwrite(save_path, frame_to_save)
+        print(f"Photo saved ({photo_counting[1] + 1}/{MAX_INDEX + 1}): {file_name}")
+        photo_counting[0] += 1
+
+        if photo_counting[1] < max_index:
+            photo_counting[1] += 1
+
+        if photo_counting[0] > max_index:
+            photo_counting[0] = first_index
+        else:
+            photo_counting[0] += first_index
 
 
 def delete_photos(name: str, photo_counting: [int, int], first_index: int, photo_dir: str) -> None:
