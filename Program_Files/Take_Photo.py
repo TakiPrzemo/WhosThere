@@ -84,14 +84,14 @@ def get_existing_names(photo_path: str) -> Union[Tuple[str, ...], Tuple[None]]:
 
 
 def count_users(name: str, photo_dir: str, max_index: int, first_index: int):
+    res = [0, 0]
     if(name != ""):
-        res = []
         if any(file.startswith(name) for file in os.listdir(photo_dir)):
             existing_files = []
             for file in os.listdir(photo_dir):
                 if re.match(f"{name}_[0-9]+\.jpg", file, re.IGNORECASE):
                     existing_files.append(file)
-            index_list = []
+            index_list = [-1]
             for file in existing_files:
                 number = re.search(r'\d+', file)
                 if number:
@@ -121,7 +121,7 @@ if __name__ == '__main__':
     DIR = "Photos"
     FIRST_INDEX = 0
     MAX_INDEX = 9
-    user_photo_data = []
+    user_photo_data = [0,0]
     frame_raw = None
     names_set = get_existing_names(DIR)
     person_name = "test"
@@ -184,45 +184,13 @@ if __name__ == '__main__':
 
     button_3 = tk.Button(left_frame,
                          text="test hide",
-                         command=lambda: show_widget(save_info, save_info_text, root, "test " + person_name, "blue")
+                         command=lambda: show_widget(save_info, save_info_text, root, "test " + person_name + str(user_photo_data[0]) + str(user_photo_data[1]), "blue")
                          )
     button_3.pack()
     # ==========
 
     camera_preview = tk.Label(right_frame)
     camera_preview.pack()
-
-    # if do ustawiania indeksowania pliku
-
-    # ======================================
-
-    '''
-    if any(file.startswith(person_name) for file in os.listdir(DIR)):
-        existing_files = []
-        for file in os.listdir(DIR):
-            if re.match(f"{person_name}_[0-9]+\.jpg", file, re.IGNORECASE):
-                existing_files.append(file)
-        index_list = []
-        for file in existing_files:
-            number = re.search(r'\d+', file)
-            if number:
-                number_str = number.group()
-                index_list.append(int(number_str))
-
-        user_photo_data[1] = max(index_list) + 1
-        user_photo_data[0] = user_photo_data[1]
-
-        if user_photo_data[0] >= MAX_INDEX:
-            user_photo_data[0] = FIRST_INDEX
-            user_photo_data[1] = MAX_INDEX
-        else:
-            user_photo_data[0] = user_photo_data[0] + FIRST_INDEX
-
-    else:
-        user_photo_data[0] = FIRST_INDEX
-        user_photo_data[1] = FIRST_INDEX
-    '''
-    # ======================================
 
     camera = cv.VideoCapture(0)
 
@@ -232,7 +200,7 @@ if __name__ == '__main__':
         while True:
             if (user_name.get() != ""):
                 if(user_name.get() != person_name):
-                    user_photo_data = count_users(person_name, DIR, MAX_INDEX, FIRST_INDEX)
+                    user_photo_data = count_users(user_name.get(), DIR, MAX_INDEX, FIRST_INDEX)
                 person_name = user_name.get()
             else:
                 person_name = ""
