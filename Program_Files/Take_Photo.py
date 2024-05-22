@@ -22,29 +22,32 @@ def save_photo(name: str, photo_counting: [int, int], max_index: int, first_inde
     if (name == ""):
         tk.messagebox.showinfo("Save photo", "Enter username")
     else:
-        file_name = f"{name.capitalize()}_{photo_counting[0]}.jpg"
-
-        try:
-            face_recognition.face_encodings(frame_to_save)[0]
-        except IndexError:
-            # print("Photo is too blurry, repeat the shot!")
-            show_widget(widget, label, window, "Photo is too blurry, repeat the shot!", color="red")
-            button.config(state=NORMAL)
-        else:
-            save_path = os.path.join(photo_dir, file_name)
-
-            cv.imwrite(save_path, frame_to_save)
-            # print(f"Photo saved ({photo_counting[1] + 1}/{MAX_INDEX + 1}): {file_name}")
-            show_widget(widget, label, window, "Photo saved", color="green")
-            photo_counting[0] += 1
-
-            if photo_counting[1] < max_index:
-                photo_counting[1] += 1
-
-            if photo_counting[0] > max_index:
-                photo_counting[0] = first_index
+        if not(os.path.exists(os.path.join(photo_dir, f"{name}_0.jpg"))):
+            result = tk.messagebox.askokcancel("Save photo",
+                                               f"Do you want to add new user : {name}")
+        if (os.path.exists(os.path.join(photo_dir, f"{name}_0.jpg")) or result):
+            file_name = f"{name.capitalize()}_{photo_counting[0]}.jpg"
+            try:
+                face_recognition.face_encodings(frame_to_save)[0]
+            except IndexError:
+                # print("Photo is too blurry, repeat the shot!")
+                show_widget(widget, label, window, "Photo is too blurry, repeat the shot!", color="red")
+                button.config(state=NORMAL)
             else:
-                photo_counting[0] += first_index
+                save_path = os.path.join(photo_dir, file_name)
+
+                cv.imwrite(save_path, frame_to_save)
+                # print(f"Photo saved ({photo_counting[1] + 1}/{MAX_INDEX + 1}): {file_name}")
+                show_widget(widget, label, window, "Photo saved", color="green")
+                photo_counting[0] += 1
+
+                if photo_counting[1] < max_index:
+                    photo_counting[1] += 1
+
+                if photo_counting[0] > max_index:
+                    photo_counting[0] = first_index
+                else:
+                    photo_counting[0] += first_index
 
     button.config(state=NORMAL)
 
@@ -83,7 +86,7 @@ def get_existing_names(photo_path: str) -> Union[Tuple[str, ...], Tuple[None]]:
     return res
 
 
-def count_users(name: str, photo_dir: str, max_index: int, first_index: int):
+def count_users(name: str, photo_dir: str, max_index: int, first_index: int) -> List[int]:
     res = [0, 0]
     if(name != ""):
         if any(file.startswith(name) for file in os.listdir(photo_dir)):
@@ -124,7 +127,7 @@ if __name__ == '__main__':
     user_photo_data = [0,0]
     frame_raw = None
     names_set = get_existing_names(DIR)
-    person_name = "test"
+    person_name = ""
 
     root = tk.Tk()
     root.title("Manage users")
