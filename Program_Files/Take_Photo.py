@@ -16,19 +16,21 @@ def callback() -> None:
 
 
 def save_photo(name: str, photo_counting: [int, int], max_index: int, first_index: int, photo_dir: str,
-               frame_to_save, widget, window, label) -> None:
+               frame_to_save, widget, window, label, button) -> None:
+    button.config(state=DISABLED)
     file_name = f"{name.capitalize()}_{photo_counting[0]}.jpg"
 
     try:
         face_recognition.face_encodings(frame_to_save)[0]
     except IndexError:
-        #print("Photo is too blurry, repeat the shot!")
-        show_widget(widget, label, window,"Photo is too blurry, repeat the shot!", color="red")
+        # print("Photo is too blurry, repeat the shot!")
+        show_widget(widget, label, window, "Photo is too blurry, repeat the shot!", color="red")
+        button.config(state=NORMAL)
     else:
         save_path = os.path.join(photo_dir, file_name)
 
         cv.imwrite(save_path, frame_to_save)
-        #print(f"Photo saved ({photo_counting[1] + 1}/{MAX_INDEX + 1}): {file_name}")
+        # print(f"Photo saved ({photo_counting[1] + 1}/{MAX_INDEX + 1}): {file_name}")
         show_widget(widget, label, window, "Photo saved", color="green")
         photo_counting[0] += 1
 
@@ -39,6 +41,8 @@ def save_photo(name: str, photo_counting: [int, int], max_index: int, first_inde
             photo_counting[0] = first_index
         else:
             photo_counting[0] += first_index
+
+        button.config(state=NORMAL)
 
 
 def delete_photos(name: str, photo_counting: [int, int], first_index: int, photo_dir: str) -> None:
@@ -58,7 +62,7 @@ def delete_photos(name: str, photo_counting: [int, int], first_index: int, photo
 
 def show_widget(widget, label, window, message: str, color: str) -> None:
     widget.pack()
-    widget.config(width=window.winfo_width(), height=window.winfo_width()//20)
+    widget.config(width=window.winfo_width(), height=window.winfo_width() // 20)
     label.config(text=message, bg=color)
     window.update()
     widget.after(1000, widget.pack_forget())
@@ -85,14 +89,14 @@ if __name__ == '__main__':
     left_frame.pack_propagate(False)
     # do left_frame dodajemy przyciski i inne elementy interfejsu
 
-    right_frame = Frame(main_window)
+    right_frame = Frame(main_window, background="red")
     right_frame.pack(side=RIGHT, expand=TRUE, fill=BOTH)
 
     save_info = tk.Frame(root)
     save_info.pack_propagate(False)
     save_info.pack(side=BOTTOM, expand=TRUE, fill=BOTH)
 
-    save_info_text = tk.Label(save_info, text="Photo Saved",bg="green", fg="white", font=("Arial", 16, "bold"))
+    save_info_text = tk.Label(save_info, text="Photo Saved", bg="green", fg="white", font=("Arial", 16, "bold"))
     save_info_text.pack(expand=TRUE, fill=BOTH)
 
     save_info.pack_forget()
@@ -101,7 +105,7 @@ if __name__ == '__main__':
     button_1 = tk.Button(left_frame,
                          text="Test zapisz",
                          command=lambda: save_photo(person_name, user_photo_data, MAX_INDEX, FIRST_INDEX, DIR,
-                                                    frame_raw, save_info, root, save_info_text)
+                                                    frame_raw, save_info, root, save_info_text, button_1)
                          )
     button_1.pack()
 
