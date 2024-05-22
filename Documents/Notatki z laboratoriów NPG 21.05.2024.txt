@@ -1,0 +1,8 @@
+- Opis ogólny (może do tego coś o zapotrzebowaniu i do czego to można użyć na rynku i sprzedać)
+- Opis techniczny (jakie biblioteki, jak to zrobić itd)
+/\ dać to może do jednego folderu z dokumentacją
+
+- Dalej robić dokładne opisy zadań i ile co zajęło, projekty, itd.
+- Robić częste update'y kodu do repozytorium, nie że jeden update i ok
+- Gałęzie, może więcej zrobić
+- Backlog w tabeli w excelu może zrobić (?)
