@@ -48,6 +48,8 @@ def save_photo(name: str, photo_counting: [int, int], max_index: int, first_inde
                     photo_counting[0] = first_index
                 else:
                     photo_counting[0] += first_index
+                
+                update_photo_counter(photo_counter_label, photo_counting[0], MAX_INDEX)
 
     button.config(state=NORMAL)
 
@@ -67,6 +69,7 @@ def delete_photos(name: str, photo_counting: [int, int], first_index: int, photo
                     os.remove(path)
             tk.messagebox.showinfo("Delete photos", f"Deleted {photo_counting[1]} photos")
             photo_counting[:] = [first_index, first_index]
+            update_photo_counter(photo_counter_label, photo_counting[0], MAX_INDEX)
 
 
 def show_widget(widget, label, window, message: str, color: str) -> None:
@@ -118,6 +121,8 @@ def count_users(name: str, photo_dir: str, max_index: int, first_index: int) -> 
 
     return res
 
+def update_photo_counter(label: tk.Label, current_count: int, max_count: int) -> None:
+    label.config(text=f"{current_count}/{max_count + 1}")
 
 if __name__ == '__main__':
 
@@ -161,7 +166,6 @@ if __name__ == '__main__':
             newvalues = [i for i in names_set if user_name.get() in i]
             name_suggestions['values'] = newvalues
 
-
     user_name = tk.StringVar()
     user_name.trace('w', update_suggestions)
 
@@ -191,6 +195,9 @@ if __name__ == '__main__':
                          )
     button_3.pack()
     # ==========
+    
+    photo_counter_label = tk.Label(left_frame, text="0/10", font=("Arial", 16, "bold"))
+    photo_counter_label.pack(pady=10)
 
     camera_preview = tk.Label(right_frame)
     camera_preview.pack()
@@ -203,8 +210,12 @@ if __name__ == '__main__':
         while True:
             if (user_name.get() != ""):
                 if(user_name.get() != person_name):
+                    #print(f"person_name updated to: {user_name.get()}")
                     user_photo_data = count_users(user_name.get(), DIR, MAX_INDEX, FIRST_INDEX)
+                    update_photo_counter(photo_counter_label, user_photo_data[1], MAX_INDEX)
                 person_name = user_name.get()
+                if person_name in names_set:
+                    update_photo_counter(photo_counter_label, user_photo_data[1] + 1, MAX_INDEX)
             else:
                 person_name = ""
 
