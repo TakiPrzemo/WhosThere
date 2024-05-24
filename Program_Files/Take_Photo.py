@@ -204,6 +204,9 @@ if __name__ == '__main__':
     
     photo_counter_label = tk.Label(left_frame, text="0/10", font=("Arial", 16, "bold"))
     photo_counter_label.pack(pady=10)
+    
+    photo_counter_text = tk.Label(left_frame, text="Number of pictures", font=("Arial", 12))
+    photo_counter_text.pack()
 
     camera_preview = tk.Label(right_frame)
     camera_preview.pack()
