@@ -42,14 +42,20 @@ def save_photo(name: str, photo_counting: [int, int], max_index: int, first_inde
                 photo_counting[0] += 1
 
                 if photo_counting[1] < max_index:
+                    update_photo_counter(photo_counter_label, photo_counting[0], MAX_INDEX)
                     photo_counting[1] += 1
 
                 if photo_counting[0] > max_index:
+                    update_photo_counter(photo_counter_label, photo_counting[0], MAX_INDEX)
                     photo_counting[0] = first_index
                 else:
+                    update_photo_counter(photo_counter_label, photo_counting[0], MAX_INDEX)
                     photo_counting[0] += first_index
+                    
+                    
                 
-                update_photo_counter(photo_counter_label, photo_counting[0], MAX_INDEX)
+                
+                
 
     button.config(state=NORMAL)
 
