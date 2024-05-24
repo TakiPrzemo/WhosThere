@@ -1,6 +1,8 @@
 import face_recognition
 import os
 import yaml
+import tkinter as tk
+from tkinter import messagebox
 
 if __name__ == "__main__":
     DIR = r'Photos'
@@ -19,6 +21,6 @@ if __name__ == "__main__":
 
         with open('known_faces.yml', 'w') as f:
             yaml.dump({'names': known_face_names, 'encodings': known_face_encodings}, f)
-        print("Photos saved")
+            messagebox.showinfo("Success", "Photos saved successfully!")
     except IndexError:
-        print("Photos are too blurry, repeat the series!")
+        messagebox.showerror("Error", "Photos are too blurry, please repeat the series!")
