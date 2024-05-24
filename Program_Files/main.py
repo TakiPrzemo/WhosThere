@@ -57,6 +57,9 @@ if __name__ == '__main__':
     camera_preview = tk.Label(right_frame)
     camera_preview.pack()
 
+    exit_button = tk.Button(left_frame, text="Wyjście", command=callback)
+    exit_button.pack(side=BOTTOM, pady=10)
+
     camera = cv.VideoCapture(0)
 
     while True:
