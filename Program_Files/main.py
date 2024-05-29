@@ -18,6 +18,12 @@ def face_confidence(face_distance, face_match_threshold):
         value = (linear_val + ((1.0 - linear_val) * pow((linear_val - 0.5) * 2, 0.2))) * 100
         return str(round(value, 2)) + "%"
 
+def grantAccess():
+    if (os.name == "nt"):
+        os.system('mspaint Open.jpg')
+    else:
+        os.system('eog Open.jpg')
+
 
 def callback() -> None:
     camera.release()
@@ -60,6 +66,8 @@ if __name__ == '__main__':
     exit_button = tk.Button(left_frame, text="Wyjście", command=callback)
     exit_button.pack(side=BOTTOM, pady=10)
 
+    found = False
+
     camera = cv.VideoCapture(0)
 
     while True:
@@ -87,6 +95,9 @@ if __name__ == '__main__':
                     name = known_face_names[best_match_index]
                     confidence = face_confidence(face_distances[best_match_index], 0.8)
                     face_names.append(f'{name[:-2]} {confidence}')
+                    if not found:
+                        grantAccess()
+                        found = True
                 else:
                     face_names.append(name)
 
