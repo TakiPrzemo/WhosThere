@@ -17,12 +17,13 @@ def callback() -> None:
 
 
 def save_photo(name: str, photo_counting: [int, int], max_index: int, first_index: int, photo_dir: str,
-               frame_to_save, widget, window, label, button) -> None:
+               frame_to_save: None, widget: tk.Frame, window: tk.Tk, label: tk.Label, button: tk.Button) -> None:
     button.config(state=DISABLED)
     if (name == ""):
         tk.messagebox.showinfo("Save photo", "Enter username")
     else:
-        if not(os.path.exists(os.path.join(photo_dir, f"{name}_0.jpg"))):
+        result = False
+        if not (os.path.exists(os.path.join(photo_dir, f"{name}_0.jpg"))):
             result = tk.messagebox.askokcancel("Save photo",
                                                f"Do you want to add new user : {name}")
         if (os.path.exists(os.path.join(photo_dir, f"{name}_0.jpg")) or result):
@@ -30,32 +31,22 @@ def save_photo(name: str, photo_counting: [int, int], max_index: int, first_inde
             try:
                 face_recognition.face_encodings(frame_to_save)[0]
             except IndexError:
-                # print("Photo is too blurry, repeat the shot!")
                 show_widget(widget, label, window, "Photo is too blurry, repeat the shot!", color="red")
                 button.config(state=NORMAL)
             else:
                 save_path = os.path.join(photo_dir, file_name)
 
                 cv.imwrite(save_path, frame_to_save)
-                # print(f"Photo saved ({photo_counting[1] + 1}/{MAX_INDEX + 1}): {file_name}")
                 show_widget(widget, label, window, "Photo saved", color="green")
                 photo_counting[0] += 1
 
                 if photo_counting[1] < max_index:
-                    update_photo_counter(photo_counter_label, photo_counting[0], MAX_INDEX)
                     photo_counting[1] += 1
 
                 if photo_counting[0] > max_index:
-                    update_photo_counter(photo_counter_label, photo_counting[0], MAX_INDEX)
                     photo_counting[0] = first_index
                 else:
-                    update_photo_counter(photo_counter_label, photo_counting[0], MAX_INDEX)
                     photo_counting[0] += first_index
-                    
-                    
-                
-                
-                
 
     button.config(state=NORMAL)
 
@@ -75,10 +66,9 @@ def delete_photos(name: str, photo_counting: [int, int], first_index: int, photo
                     os.remove(path)
             tk.messagebox.showinfo("Delete photos", f"Deleted {photo_counting[1]} photos")
             photo_counting[:] = [first_index, first_index]
-            update_photo_counter(photo_counter_label, photo_counting[0], MAX_INDEX)
 
 
-def show_widget(widget, label, window, message: str, color: str) -> None:
+def show_widget(widget: tk.Frame, label: tk.Label, window: tk.Tk, message: str, color: str) -> None:
     widget.pack()
     widget.config(width=window.winfo_width(), height=window.winfo_width() // 20)
     label.config(text=message, bg=color)
@@ -95,9 +85,9 @@ def get_existing_names(photo_path: str) -> Union[Tuple[str, ...], Tuple[None]]:
     return res
 
 
-def count_users(name: str, photo_dir: str, max_index: int, first_index: int) -> List[int]:
+def count_users(name: str, photo_dir: str, max_index: int, first_index: int) -> [int, int]:
     res = [0, 0]
-    if(name != ""):
+    if (name != ""):
         if any(file.startswith(name) for file in os.listdir(photo_dir)):
             existing_files = []
             for file in os.listdir(photo_dir):
@@ -123,19 +113,17 @@ def count_users(name: str, photo_dir: str, max_index: int, first_index: int) -> 
             res[0] = first_index
             res[1] = first_index
     else:
-        res = [first_index,first_index]
+        res = [first_index, first_index]
 
     return res
 
-def update_photo_counter(label: tk.Label, current_count: int, max_count: int) -> None:
-    label.config(text=f"{current_count}/{max_count + 1}")
 
 if __name__ == '__main__':
 
     DIR = "Photos"
     FIRST_INDEX = 0
     MAX_INDEX = 9
-    user_photo_data = [0,0]
+    user_photo_data = [0, 0]
     frame_raw = None
     names_set = get_existing_names(DIR)
     person_name = ""
@@ -143,6 +131,7 @@ if __name__ == '__main__':
     root = tk.Tk()
     root.title("Manage users")
     root.protocol("WM_DELETE_WINDOW", callback)
+    counter_display_text = tk.StringVar(root, "0/10")
 
     main_window = Frame(root)
     main_window.pack(side=TOP, fill=BOTH)
@@ -172,6 +161,10 @@ if __name__ == '__main__':
             newvalues = [i for i in names_set if user_name.get() in i]
             name_suggestions['values'] = newvalues
 
+
+    enter_user_text = tk.Label(left_frame, text="Enter user:")
+    enter_user_text.pack(pady=5)
+
     user_name = tk.StringVar()
     user_name.trace('w', update_suggestions)
 
@@ -179,34 +172,39 @@ if __name__ == '__main__':
     name_suggestions.grid(row=0, column=0)
     name_suggestions['values'] = names_set
 
-    name_suggestions.pack()
+    name_suggestions.pack(pady=2.5)
 
     # przyciski jako testowe elementy (do usunięcia)
     button_1 = tk.Button(left_frame,
-                         text="Test zapisz",
+                         width=10,
+                         text="Zapisz",
                          command=lambda: save_photo(person_name, user_photo_data, MAX_INDEX, FIRST_INDEX, DIR,
                                                     frame_raw, save_info, root, save_info_text, button_1)
                          )
-    button_1.pack()
+    button_1.pack(pady=2.5)
 
     button_2 = tk.Button(left_frame,
                          text="Usun",
+                         width=10,
                          command=lambda: delete_photos(person_name, user_photo_data, FIRST_INDEX, DIR)
                          )
-    button_2.pack()
+    button_2.pack(pady=5)
 
+    '''Przycisk testowy
+    
     button_3 = tk.Button(left_frame,
                          text="test hide",
                          command=lambda: show_widget(save_info, save_info_text, root, "test " + person_name + str(user_photo_data[0]) + str(user_photo_data[1]), "blue")
                          )
     button_3.pack()
+    '''
     # ==========
-    
-    photo_counter_label = tk.Label(left_frame, text="0/10", font=("Arial", 16, "bold"))
-    photo_counter_label.pack(pady=10)
-    
+
     photo_counter_text = tk.Label(left_frame, text="Number of pictures", font=("Arial", 12))
     photo_counter_text.pack()
+
+    photo_counter_label = tk.Label(left_frame, textvariable=counter_display_text, font=("Arial", 16, "bold"))
+    photo_counter_label.pack(pady=5)
 
     camera_preview = tk.Label(right_frame)
     camera_preview.pack()
@@ -218,13 +216,10 @@ if __name__ == '__main__':
     else:
         while True:
             if (user_name.get() != ""):
-                if(user_name.get() != person_name):
-                    #print(f"person_name updated to: {user_name.get()}")
+                if (user_name.get() != person_name):
                     user_photo_data = count_users(user_name.get(), DIR, MAX_INDEX, FIRST_INDEX)
-                    update_photo_counter(photo_counter_label, user_photo_data[1], MAX_INDEX)
                 person_name = user_name.get()
-                if person_name in names_set:
-                    update_photo_counter(photo_counter_label, user_photo_data[1] + 1, MAX_INDEX)
+                counter_display_text.set(f"{user_photo_data[1]}/{MAX_INDEX + 1}")
             else:
                 person_name = ""
 
