@@ -177,14 +177,14 @@ if __name__ == '__main__':
     # przyciski jako testowe elementy (do usunięcia)
     button_1 = tk.Button(left_frame,
                          width=10,
-                         text="Zapisz",
+                         text="Save",
                          command=lambda: save_photo(person_name, user_photo_data, MAX_INDEX, FIRST_INDEX, DIR,
                                                     frame_raw, save_info, root, save_info_text, button_1)
                          )
     button_1.pack(pady=2.5)
 
     button_2 = tk.Button(left_frame,
-                         text="Usun",
+                         text="Delete",
                          width=10,
                          command=lambda: delete_photos(person_name, user_photo_data, FIRST_INDEX, DIR)
                          )
