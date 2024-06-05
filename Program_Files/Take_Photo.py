@@ -191,6 +191,7 @@ if __name__ == '__main__':
 
     button_2 = tk.Button(left_frame,
                          text="Usun",
+                         bg="red",
                          command=lambda: delete_photos(person_name, user_photo_data, FIRST_INDEX, DIR)
                          )
     button_2.pack()
