@@ -40,7 +40,7 @@ def save_photo(name: str, photo_counting: [int, int], max_index: int, first_inde
                 show_widget(widget, label, window, "Photo saved", color="green")
                 photo_counting[0] += 1
 
-                if photo_counting[1] < max_index:
+                if photo_counting[1] <= max_index:
                     photo_counting[1] += 1
 
                 if photo_counting[0] > max_index:
@@ -105,7 +105,7 @@ def count_users(name: str, photo_dir: str, max_index: int, first_index: int) -> 
 
             if res[0] >= max_index:
                 res[0] = first_index
-                res[1] = max_index
+                res[1] = max_index+1
             else:
                 res[0] = res[0] + first_index
 
