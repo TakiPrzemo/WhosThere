@@ -1,10 +1,11 @@
 import face_recognition
 import os
 import yaml
-import tkinter as tk
 from tkinter import messagebox
+import tkinter as tk
+import tkinter.font as font
 
-if __name__ == "__main__":
+def train():
     DIR = r'Photos'
     known_face_names = []
     known_face_encodings = []
@@ -24,3 +25,13 @@ if __name__ == "__main__":
             messagebox.showinfo("Success", "Photos saved successfully!")
     except IndexError:
         messagebox.showerror("Error", "Photos are too blurry, please repeat the series!")
+    r.destroy()
+
+if __name__ == "__main__":
+	r = tk.Tk()
+	r.title('Training')
+	myFont = font.Font(size=60)
+	button = tk.Button(r, text='Process pictures', width=20, height=5, command=train)
+	button['font'] = myFont
+	button.pack()
+	r.mainloop()
