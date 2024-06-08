@@ -82,6 +82,17 @@ if __name__ == '__main__':
             rgb_small_frame = cv.cvtColor(small_frame, cv.COLOR_BGR2RGB)
 
             face_loc = face_recognition.face_locations(rgb_small_frame)
+            
+            filtered_face_loc = []
+            for face in face_loc:
+                if  not ((face[0] < (small_frame.shape[0]//10)) or 
+                        ( face[3] < (small_frame.shape[1]//10)) or 
+                        ( face[2] > ((small_frame.shape[0]*9)//10)) or
+                        ( face[1] > ((small_frame.shape[1]*9)//10))):
+                    filtered_face_loc.append(face)
+                    
+            face_loc = filtered_face_loc
+
             face_encodings = face_recognition.face_encodings(rgb_small_frame, face_loc)
 
             face_names = []
