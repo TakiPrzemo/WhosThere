@@ -1,43 +1,214 @@
 import cv2 as cv
-import os
 import re
+import tkinter as tk
+from tkinter import *
+from tkinter import messagebox
+from tkinter import ttk
+import face_recognition
+from PIL import Image
+from PIL import ImageTk
+import os
+from typing import Tuple, Union, List
+
+
+def callback() -> None:
+    camera.release()
+    root.destroy()
+
+
+def save_photo(name: str, photo_counting: [int, int], max_index: int, first_index: int, photo_dir: str,
+               frame_to_save: None, widget: tk.Frame, window: tk.Tk, label: tk.Label, button: tk.Button) -> None:
+    button.config(state=DISABLED)
+    if (name == ""):
+        tk.messagebox.showinfo("Save photo", "Enter username")
+    else:
+        result = False
+        if not (os.path.exists(os.path.join(photo_dir, f"{name}_0.jpg"))):
+            result = tk.messagebox.askokcancel("Save photo",
+                                               f"Do you want to add new user : {name}")
+        if (os.path.exists(os.path.join(photo_dir, f"{name}_0.jpg")) or result):
+            file_name = f"{name.capitalize()}_{photo_counting[0]}.jpg"
+            try:
+                face_recognition.face_encodings(frame_to_save)[0]
+            except IndexError:
+                show_widget(widget, label, window, "Photo is too blurry, repeat the shot!", color="red")
+                button.config(state=NORMAL)
+            else:
+                save_path = os.path.join(photo_dir, file_name)
+
+                cv.imwrite(save_path, frame_to_save)
+                show_widget(widget, label, window, "Photo saved", color="green")
+                photo_counting[0] += 1
+
+                if photo_counting[1] <= max_index:
+                    photo_counting[1] += 1
+
+                if photo_counting[0] > max_index:
+                    photo_counting[0] = first_index
+                else:
+                    photo_counting[0] += first_index
+
+    button.config(state=NORMAL)
+
+
+def delete_photos(name: str, photo_counting: [int, int], first_index: int, photo_dir: str) -> None:
+    if (name == ""):
+        tk.messagebox.showinfo("Delete photos", "Enter username")
+    elif (photo_counting[1] == 0):
+        tk.messagebox.showinfo("Delete photos", "No photos to delete")
+    else:
+        result = tk.messagebox.askokcancel("Delete photos",
+                                           f"Do you want to delete all photos assigned to user: {name}")
+        if (result):
+            for i in range(first_index, photo_counting[1]):
+                path = os.path.join(photo_dir, f"{name.capitalize()}_{i}.jpg")
+                if (os.path.exists(path)):
+                    os.remove(path)
+            tk.messagebox.showinfo("Delete photos", f"Deleted {photo_counting[1]} photos")
+            photo_counting[:] = [first_index, first_index]
+
+
+def show_widget(widget: tk.Frame, label: tk.Label, window: tk.Tk, message: str, color: str) -> None:
+    widget.pack()
+    widget.config(width=window.winfo_width(), height=window.winfo_width() // 20)
+    label.config(text=message, bg=color)
+    window.update()
+    widget.after(1000, widget.pack_forget())
+
+
+def get_existing_names(photo_path: str) -> Union[Tuple[str, ...], Tuple[None]]:
+    res = ()
+    for file_name in os.listdir(photo_path):
+        if (file_name[-4:] == ".jpg"):
+            if (file_name[:-6] not in res):
+                res += (file_name[:-6],)
+    return res
+
+
+def count_users(name: str, photo_dir: str, max_index: int, first_index: int) -> [int, int]:
+    res = [0, 0]
+    if (name != ""):
+        if any(file.startswith(name) for file in os.listdir(photo_dir)):
+            existing_files = []
+            for file in os.listdir(photo_dir):
+                if re.match(f"{name}_[0-9]+\.jpg", file, re.IGNORECASE):
+                    existing_files.append(file)
+            index_list = [-1]
+            for file in existing_files:
+                number = re.search(r'\d+', file)
+                if number:
+                    number_str = number.group()
+                    index_list.append(int(number_str))
+
+            res[1] = max(index_list) + 1
+            res[0] = res[1]
+
+            if res[0] >= max_index:
+                res[0] = first_index
+                res[1] = max_index+1
+            else:
+                res[0] = res[0] + first_index
+
+        else:
+            res[0] = first_index
+            res[1] = first_index
+    else:
+        res = [first_index, first_index]
+
+    return res
+
 
 if __name__ == '__main__':
+
     DIR = "Photos"
     FIRST_INDEX = 0
     MAX_INDEX = 9
+    user_photo_data = [0, 0]
+    frame_raw = None
+    names_set = get_existing_names(DIR)
+    person_name = ""
 
-    # if do ustawiania indeksowania pliku
+    root = tk.Tk()
+    root.title("Manage users")
+    root.protocol("WM_DELETE_WINDOW", callback)
+    counter_display_text = tk.StringVar(root, "0/10")
 
-    # ======================================
-    person_name = input("Submit user's name: ")
+    main_window = Frame(root)
+    main_window.pack(side=TOP, fill=BOTH)
 
-    if any(file.startswith(person_name) for file in os.listdir(DIR)):
-        existing_files = []
-        for file in os.listdir(DIR):
-            if re.match(f"{person_name}_[0-9]+\.jpg", file, re.IGNORECASE):
-                existing_files.append(file)
-        index_list = []
-        for file in existing_files:
-            number = re.search(r'\d+', file)
-            if number:
-                number_str = number.group()
-                index_list.append(int(number_str))
+    left_frame = Frame(main_window, width=200)
+    left_frame.pack(side=LEFT, fill=Y)
+    left_frame.pack_propagate(False)
+    # do left_frame dodajemy przyciski i inne elementy interfejsu
 
-        max_index = max(index_list) + 1
-        next_index = max_index
+    right_frame = Frame(main_window)
+    right_frame.pack(side=RIGHT, expand=TRUE, fill=BOTH)
 
-        if next_index >= MAX_INDEX:
-            picture_index = FIRST_INDEX
-            max_index = MAX_INDEX
+    save_info = tk.Frame(root)
+    save_info.pack_propagate(False)
+    save_info.pack(side=BOTTOM, expand=TRUE, fill=BOTH)
+
+    save_info_text = tk.Label(save_info, text="Photo Saved", bg="green", fg="white", font=("Arial", 16, "bold"))
+    save_info_text.pack(expand=TRUE, fill=BOTH)
+
+    save_info.pack_forget()
+
+
+    def update_suggestions(*args) -> None:
+        if (user_name.get() == ""):
+            name_suggestions['values'] = names_set
         else:
-            picture_index = next_index + FIRST_INDEX
+            newvalues = [i for i in names_set if user_name.get() in i]
+            name_suggestions['values'] = newvalues
 
-    else:
-        picture_index = FIRST_INDEX
-        max_index = FIRST_INDEX
 
-    # ======================================
+    enter_user_text = tk.Label(left_frame, text="Enter user:")
+    enter_user_text.pack(pady=5)
+
+    user_name = tk.StringVar()
+    user_name.trace('w', update_suggestions)
+
+    name_suggestions = ttk.Combobox(left_frame, width=22, textvariable=user_name)
+    name_suggestions.grid(row=0, column=0)
+    name_suggestions['values'] = names_set
+
+    name_suggestions.pack(pady=2.5)
+
+    # przyciski jako testowe elementy (do usunięcia)
+    button_1 = tk.Button(left_frame,
+                         width=10,
+                         text="Save",
+                         command=lambda: save_photo(person_name, user_photo_data, MAX_INDEX, FIRST_INDEX, DIR,
+                                                    frame_raw, save_info, root, save_info_text, button_1)
+                         )
+    button_1.pack(pady=2.5)
+
+    button_2 = tk.Button(left_frame,
+                         text="Delete",
+                         width=10,
+                         bg="red",
+                         command=lambda: delete_photos(person_name, user_photo_data, FIRST_INDEX, DIR)
+                         )
+    button_2.pack(pady=5)
+
+    '''Przycisk testowy
+    
+    button_3 = tk.Button(left_frame,
+                         text="test hide",
+                         command=lambda: show_widget(save_info, save_info_text, root, "test " + person_name + str(user_photo_data[0]) + str(user_photo_data[1]), "blue")
+                         )
+    button_3.pack()
+    '''
+    # ==========
+
+    photo_counter_text = tk.Label(left_frame, text="Number of pictures", font=("Arial", 12))
+    photo_counter_text.pack()
+
+    photo_counter_label = tk.Label(left_frame, textvariable=counter_display_text, font=("Arial", 16, "bold"))
+    photo_counter_label.pack(pady=5)
+
+    camera_preview = tk.Label(right_frame)
+    camera_preview.pack()
 
     camera = cv.VideoCapture(0)
 
@@ -45,31 +216,25 @@ if __name__ == '__main__':
         print("ERR: camera not connected")
     else:
         while True:
-            ret, video = camera.read()
-            cv.namedWindow("Who's there", cv.WINDOW_GUI_NORMAL)
-            cv.imshow("Adding new user", video)
+            if (user_name.get() != ""):
+                if (user_name.get() != person_name):
+                    user_photo_data = count_users(user_name.get(), DIR, MAX_INDEX, FIRST_INDEX)
+                person_name = user_name.get()
+                counter_display_text.set(f"{user_photo_data[1]}/{MAX_INDEX + 1}")
+            else:
+                person_name = ""
 
-            # wychodzenie z aplikacji
-            if cv.waitKey(1) == ord('q'):
+            ret, frame_raw = camera.read()
+
+            if not ret:
                 break
 
-            # robienie zdjęć spacją
-            elif cv.waitKey(1) == ord(' '):
-                file_name = f"{person_name.capitalize()}_{picture_index}.jpg"
+            frame_arr = cv.cvtColor(frame_raw, cv.COLOR_BGR2RGB)
+            frame = Image.fromarray(frame_arr)
+            image = ImageTk.PhotoImage(frame)
+            camera_preview.configure(image=image)
 
-                save_path = os.path.join(DIR, file_name)
-
-                cv.imwrite(save_path, video)
-                print(f"Photo saved ({max_index + 1}/{MAX_INDEX + 1}): {file_name}")
-                picture_index += 1
-
-                if max_index < MAX_INDEX:
-                    max_index += 1
-
-                if picture_index > MAX_INDEX:
-                    picture_index = FIRST_INDEX
-                else:
-                    picture_index += FIRST_INDEX
+            root.update()
 
     camera.release()
-    cv.destroyAllWindows()
+    root.mainloop()
