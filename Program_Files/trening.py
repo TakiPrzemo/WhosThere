@@ -1,8 +1,12 @@
 import face_recognition
 import os
 import yaml
+from tkinter import messagebox
+import tkinter as tk
+import tkinter.font as font
+import time
 
-if __name__ == "__main__":
+def train():
     DIR = r'Photos'
     known_face_names = []
     known_face_encodings = []
@@ -19,6 +23,31 @@ if __name__ == "__main__":
 
         with open('known_faces.yml', 'w') as f:
             yaml.dump({'names': known_face_names, 'encodings': known_face_encodings}, f)
-        print("Photos saved")
+            messagebox.showinfo("Success", "Photos saved successfully!")
     except IndexError:
-        print("Photos are too blurry, repeat the series!")
+        messagebox.showerror("Error", "Photos are too blurry, please repeat the series!")
+    r.destroy()
+
+r = tk.Tk()
+r.title('Training')
+myFont = font.Font(size=60)
+button = tk.Button(r, text='Process pictures', width=20, height=5, command=train)
+button['font'] = myFont
+button.pack(padx=10, pady=10)
+
+def colorLoop():
+    colorIndex = int(time.time() * 100)%300
+    r = max(-abs((colorIndex%300)-100)+100,0)*255//100
+    g = max(-abs(((colorIndex+100)%300)-100)+100,0)*255//100
+    b = max(-abs(((colorIndex+200)%300)-100)+100,0)*255//100
+    return f'#{r:02x}{g:02x}{b:02x}'
+    
+def ButtonUpdate():
+    color = colorLoop()
+    button.config(activeforeground=color,fg=color)
+    r.after(50, ButtonUpdate)
+
+ButtonUpdate()
+
+
+r.mainloop()
